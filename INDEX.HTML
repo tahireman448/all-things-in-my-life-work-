@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ALI RAZA || Official</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #171702;
+            --bg-secondary: #0f172a;
+            --accent: #fffb00;
+            --accent-glow: rgba(255, 238, 0, 0.884);
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(61, 98%, 61%, 0.473) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(61, 100%, 50%, 0.432) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgb(74, 77, 40) 0px, transparent 100%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background 0.3s;
+            overflow-x: hidden;
+            cursor: default;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Custom Cursor Glow */
+        #cursor-glow {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+            mix-blend-mode: screen;
+        }
+
+        canvas#particles {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        /* Navigation */
+        .navbar {
+            backdrop-filter: blur(20px);
+            background: rgba(14, 15, 1, 0.8);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 15px 0;
+            backdrop-filter: blur(20px);
+        }
+
+        .navbar-brand {
+            letter-spacing: 2px;
+            font-size: 1.4rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(to bottom, transparent, var(--bg-primary));
+            padding-top: 80px;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(3rem, 10vw, 7.5rem);
+            font-weight: 800;
+            line-height: 0.9;
+            margin-bottom: 20px;
+            background: linear-gradient(180deg, #fff 40%, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 2.5rem;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 15px 35px rgba(238, 234, 172, 0);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-12px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(243, 245, 150, 0.363);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* Image Containers - Unified Styles */
+        .img-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            aspect-ratio: 16/9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .img-container:hover {
+            transform: scale(1.02);
+            box-shadow: 0 25px 50px rgba(255, 251, 0, 0.2);
+        }
+
+        .uniform-img, .uniform-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.8s cubic-bezier(0.2, 1, 0.3, 1);
+        }
+
+        .img-container:hover .uniform-img {
+            transform: scale(1.1) rotate(1deg);
+            filter: brightness(50%);
+        }
+
+        .card-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 25px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            opacity: 0;
+            transition: 0.4s;
+        }
+
+        .img-container:hover .card-overlay {
+            opacity: 1;
+        }
+
+        /* Progress Bar */
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent), #fff);
+            width: 0%;
+            z-index: 10001;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* Buttons */
+        .btn-action {
+            background: var(--accent);
+            color: #171702;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 100px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .btn-action:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--accent-glow);
+            background: #fff;
+        }
+
+        /* Social Sidebar */
+        .social-sidebar {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .social-sidebar a {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .social-sidebar a:hover {
+            background: var(--accent);
+            color: #000;
+            transform: translateX(-5px);
+        }
+
+        /* Quote Section */
+        .quote-box {
+            border-left: 4px solid var(--accent);
+            padding-left: 20px;
+            margin: 40px 0;
+        }
+
+        /* Video Wrapper */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 */
+            overflow: hidden;
+            border-radius: 24px;
+        }
+
+        /* Modals */
+        .modal-content {
+            background: rgba(73, 64, 24, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 35px;
+        }
+
+        /* Responsive */
+        @media(max-width: 768px) {
+            canvas#particles { display: none; }
+            .hero-content h1 { font-size: 3.5rem; }
+            .social-sidebar { display: none; }
+            .hero { padding-top: 100px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cursor-glow"></div>
+    <div id="progress-bar"></div>
+    <canvas id="particles"></canvas>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-white">ALI <span style="color:var(--accent)">RAZA</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn-action d-none d-md-block" onclick="alert('Welcome to the Fanclub!')">Join Fantastic</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content" data-aos="zoom-out">
+                <h1>ALI RAZA</h1>
+                <p id="typeText" class="fs-4 fw-light" style="color:var(--accent); min-height:40px; letter-spacing: 2px;"></p>
+                <div class="mt-4">
+                    <a href="#dramas" class="btn btn-outline-light rounded-pill px-5 py-3 fw-bold">Explore Masterpieces</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quote Section -->
+    <section class="container py-5">
+        <div class="glass-card text-center mx-auto" style="max-width: 600px;" data-aos="fade-up">
+            <i class="fa fa-quote-left mb-3" style="color: var(--accent); font-size: 2rem;"></i>
+            <h2 id="quote-text" class="fst-italic fw-light display-6">"I don't follow trends, I set them."</h2>
+            <p class="text-secondary mt-3">— Iconic Dialogue</p>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="container py-5" id="about">
+        <div class="glass-card" data-aos="fade-up">
+            <div class="row align-items-center">
+                <div class="col-lg-7">
+                    <h2 class="fw-bold mb-4 display-5">About the <span style="color:var(--accent)">Superstar</span></h2>
+                    <p class="lead" style="color: var(--accent); font-weight: 600;">The ultimate powerhouse of charisma and versatility.</p>
+                    <p class="opacity-75 fs-5">
+                        Ali Raza is a powerhouse of talent in the Pakistani television industry, 
+                        captivating audiences with his intense performances and versatile character portrayals.
+                    </p>
+                    <p class="opacity-75 fs-5">
+                        From his early days as a high-profile model to becoming a household name in 2026, 
+                        Ali has redefined the "modern leading man" in dramas like <em>Iqtidar</em> and <em>Duniyapur</em>.
+                    </p>
+                </div>
+                <div class="col-lg-5 mt-4 mt-lg-0">
+                    <div class="p-4 rounded-4" style="background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border);">
+                        <h5 class="text-center mb-4" style="letter-spacing: 3px; font-weight: 800;">PROFILE DATA</h5>
+                        <div class="d-flex justify-content-between mb-3 border-bottom border-secondary pb-2">
+                            <span class="text-secondary">Born</span>
+                            <span>January 24, 1990</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 border-bottom border-secondary pb-2">
+                            <span class="text-secondary">Education</span>
+                            <span>Degree in Arts & Design, University of Punjab</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-secondary">Signature Style</span>
+                            <span>Intense / Alpha</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="container my-5">
+        <div class="row g-4 text-center">
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="glass-card p-4 h-100">
+                    <h3 class="fw-bold" style="color:var(--accent)">1000M+</h3>
+                    <small class="text-uppercase">Followers</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="glass-card p-4 h-100">
+                    <h3 class="fw-bold" style="color:var(--accent)">20+</h3>
+                    <small class="text-uppercase">Dramas</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="glass-card p-4 h-100">
+                    <h3 class="fw-bold" style="color:var(--accent)">20+</h3>
+                    <small class="text-uppercase">Awards</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="400">
+                <div class="glass-card p-4 h-100">
+                    <h3 class="fw-bold" style="color:var(--accent)">2020</h3>
+                    <small class="text-uppercase">Debut</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dramas Section -->
+    <section class="container py-5" id="dramas">
+        <h2 class="text-center mb-5 fw-bold display-6" data-aos="fade-right" style="color: var(--text-main);">Iconic Performances</h2>
+        <div class="row g-4">
+            <div class="col-6 col-md-4 col-lg-3" data-aos="zoom-in">
+                <div class="img-container">
+                    <img src="./noor jahan.jpg" class="uniform-img" alt="Noor Jahan">
+                    <div class="card-overlay">
+                        <h4 class="text-white fw-bold mb-1">Noor Jahan</h4>
+                        <p class="text-info mb-0 fs-6">Obsessive Love</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="100">
+                <div class="img-container">
+                    <img src="./iqtidar.jfif" class="uniform-img" alt="Iqtidar">
+                    <div class="card-overlay">
+                        <h4 class="text-white fw-bold mb-1">Iqtidar</h4>
+                        <p class="text-info mb-0 fs-6">Revenge & Passion</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="200">
+                <div class="img-container">
+                    <img src="./leader.jpg" class="uniform-img" alt="Leader">
+                    <div class="card-overlay">
+                        <h4 class="text-white fw-bold mb-1">Leader</h4>
+                        <p class="text-info mb-0 fs-6">Mega Hit Reunion</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="300">
+                <div class="img-container">
+                    <img src="./dastak.jpg" class="uniform-img" alt="Dastak">
+                    <div class="card-overlay">
+                        <h4 class="text-white fw-bold mb-1">Dastak</h4>
+                        <p class="text-info mb-0 fs-6">Thriller Drama</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="400">
+                <div class="img-container">
+                    <img src="./duniyapur.jpg" class="uniform-img" alt="Duniyapur">
+                    <div class="card-overlay">
+                        <h4 class="text-white fw-bold mb-1">Duniyapur</h4>
+                        <p class="text-info mb-0 fs-6">Epic Saga</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Career Milestones -->
+    <section class="container py-5">
+        <h2 class="text-center mb-5 fw-bold display-6">Career <span style="color: var(--accent);">Milestones</span></h2>
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-right">
+                <div class="glass-card h-100">
+                    <h4 style="color: var(--accent)">2020</h4>
+                    <p>Started with modeling and early TV appearances.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="glass-card h-100">
+                    <h4 style="color: var(--accent)">2022</h4>
+                    <p>Massive film debut with 'The Molna Jett'</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-left">
+                <div class="glass-card h-100">
+                    <h4 style="color: var(--accent)">Present</h4>
+                    <p>Dominating the entertainment charts with high-octane dramas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+ 
+
+   
+
+ <section class="container py-5">
+    <h2 class="text-center mb-5 fw-bold" data-aos="fade-left">Visual Videos Gallery</h2>
+    
+    <div class="row g-3">
+        <div class="col-6 col-md-4" data-aos="fade-up">
+            <a href="./mafia blooded.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./mafia blooded.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <a href="./millinonr.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./millinonr.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./The mafia-blooded politician💀 Iqtidar _ Ali Raza _ Anmol Baloch _ Shorts Feed #iqtidar #shortsfeed.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./The mafia-blooded politician💀 Iqtidar _ Ali Raza _ Anmol Baloch _ Shorts Feed #iqtidar #shortsfeed.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./amal.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./amal.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./king.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./king.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./like.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./like.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./time.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./time.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./anmol.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./anmol.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./happy.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./happy.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./nayab.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./nayab.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+            <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./rokna.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./rokna.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+            <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./scene.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./scene.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+            <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./beautiful.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./beautiful.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+            <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./political.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./political.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+            <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./aura of character.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./aura of character.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+            <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <a href="./attitude political.mp4" class="glightbox video-gallery-item">
+                <div class="video-wrapper">
+                    <video src="./attitude political.mp4" class="uniform-video" muted loop playsinline></video>
+                </div>
+            </a>
+        </div>
+            
+         
+
+        
+    </div>
+</section>
+
+    <!-- Footer -->
+    <footer class="text-center py-5">
+        <div class="container">
+            <h4 class="fw-bold mb-3">ALI RAZA OFFICIAL</h4>
+            <p class="text-secondary small mb-4">The ultimate fan destination for Pakistani drama lovers ❤️</p>
+            <hr class="bg-secondary w-25 mx-auto mb-4">
+            <p class="mb-0">Developed by ❤️ <strong>Eman Tahir</strong> ❤️</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+
+    <script>
+        // Initialize AOS
+        AOS.init({ once: true, duration: 800 });
+
+        // Initialize GLightbox
+        const lightbox = GLightbox({ selector: '.glightbox' });
+
+        // Cursor Glow
+        const glow = document.getElementById('cursor-glow');
+        window.addEventListener('mousemove', (e) => {
+            glow.style.left = e.clientX + 'px';
+            glow.style.top = e.clientY + 'px';
+        });
+
+        // Random Quotes
+        const quotes = [
+            "\"I don't follow trends, I set them.\"",
+            "\"Acting is not about being someone else, it's about finding the character in you.\"",
+            "\"Success is the result of hard work and staying grounded.\"",
+            "\"My fans are my strength, and their love is my reward.\""
+        ];
+        let qIndex = 0;
+        setInterval(() => {
+            qIndex = (qIndex + 1) % quotes.length;
+            const quoteEl = document.getElementById('quote-text');
+            quoteEl.style.opacity = 0;
+            setTimeout(() => {
+                quoteEl.innerText = quotes[qIndex];
+                quoteEl.style.opacity = 1;
+            }, 500);
+        }, 5000);
+
+        // Particle System
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particlesArray = [];
+
+        function initParticles() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particlesArray = [];
+            for (let i = 0; i < 60; i++) {
+                particlesArray.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 0.5,
+                    speedX: Math.random() * 0.5 - 0.25,
+                    speedY: Math.random() * 0.5 - 0.25
+                });
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#fffb00';
+            particlesArray.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+        window.addEventListener('resize', initParticles);
+
+        // Typewriter Effect
+        const textArr = ["The Mega Star", "The King of Expression", "Pakistan's Superstar"];
+        let i = 0, j = 0, del = false;
+        const el = document.getElementById("typeText");
+        
+        function typeWriter() {
+            if (!el) return;
+            el.textContent = del ? textArr[i].slice(0, --j) : textArr[i].slice(0, ++j);
+            if (!del && j === textArr[i].length) {
+                del = true;
+                setTimeout(typeWriter, 2000);
+                return;
+            }
+            if (del && j === 0) {
+                del = false;
+                i = (i + 1) % textArr.length;
+            }
+            setTimeout(typeWriter, del ? 50 : 100);
+        }
+        typeWriter();
+
+        // Scroll Progress
+        window.addEventListener("scroll", () => {
+            let s = document.documentElement.scrollTop;
+            let h = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            document.getElementById("progress-bar").style.width = (s / h) * 100 + "%";
+        });
+
+        // Video Intersection Observer
+        document.addEventListener("DOMContentLoaded", function () {
+            const videos = document.querySelectorAll(".uniform-video");
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target;
+                    if (entry.isIntersecting) {
+                        video.play().catch(e => console.log("Autoplay prevented"));
+                    } else {
+                        video.pause();
+                    }
+                });
+            }, { threshold: 0.5 });
+            videos.forEach(video => observer.observe(video));
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
