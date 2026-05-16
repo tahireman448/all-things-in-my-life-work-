@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dino Evolution Pro</title>
+    <style>
+        :root {
+            --bg-color: #f7f7f7;
+            --text-color: #333;
+            --game-width: 800px;
+            --game-height: 250px;
+        }
+
+        body {
+            text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background 0.8s, color 0.8s;
+            margin: 0;
+            padding: 20px;
+        }
+
+        body.night {
+            --bg-color: #1a1a1a;
+            --text-color: #eee;
+        }
+
+        #game-container {
+            width: var(--game-width);
+            height: var(--game-height);
+            border-bottom: 2px solid #555;
+            margin: 20px auto;
+            overflow: hidden;
+            position: relative;
+            background: transparent;
+        }
+
+        /* Elements */
+        #dino {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            background: url('https://i.imgur.com/QZ6Z6ZQ.png') no-repeat center/cover;
+            z-index: 10;
+        }
+
+        .obstacle {
+            position: absolute;
+            bottom: 0;
+            display: block;
+        }
+
+        #cactus {
+            width: 35px;
+            height: 50px;
+            background: url('https://i.imgur.com/tV5Z6bR.png') no-repeat center/cover;
+        }
+
+        #bird {
+            width: 45px;
+            height: 30px;
+            bottom: 80px;
+            background: url('https://i.imgur.com/7Qp9Z8A.png') no-repeat center/cover;
+        }
+
+        #coin {
+            width: 25px;
+            height: 25px;
+            background: #ffd700;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+
+        /* UI */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .shop {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #444;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:hover { background: #666; transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
+        
+        .overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+    </style>
+</head>
+<body class="day">
+
+    <h1>🦖 Dino Evolution Pro</h1>
+
+    <div class="stats-bar">
+        <div id="score">Score: 0</div>
+        <div id="highScore">Best: 0</div>
+        <div id="coins">💰 0</div>
+    </div>
+
+    <div id="game-container">
+        <div id="dino"></div>
+        <div id="cactus" class="obstacle"></div>
+        <div id="bird" class="obstacle"></div>
+        <div id="coin"></div>
+
+        <div id="retry-menu" class="overlay">
+            <h2 style="color: #ff4444;">GAME OVER</h2>
+            <button onclick="resetGame()">Try Again</button>
+        </div>
+    </div>
+
+    <div class="shop">
+        <strong>Skins:</strong>
+        <button onclick="setSkin('default')">Classic</button>
+        <button onclick="setSkin('blue', 15)">Ocean (15c)</button>
+        <button onclick="setSkin('gold', 50)">Midas (50c)</button>
+    </div>
+
+    <audio id="jumpSnd" src="https://www.soundjay.com/button/sounds/button-16.mp3"></audio>
+    <audio id="coinSnd" src="https://www.soundjay.com/button/sounds/button-35.mp3"></audio>
+
+    <script>
+        const dino = document.getElementById('dino');
+        const cactus = document.getElementById('cactus');
+        const bird = document.getElementById('bird');
+        const coin = document.getElementById('coin');
+        
+        // Game State
+        let isPlaying = true;
+        let score = 0;
+        let coinCount = parseInt(localStorage.getItem('dinoCoins')) || 0;
+        let highScore = parseInt(localStorage.getItem('dinoHighScore')) || 0;
+        
+        // Physics Constants
+        let gravity = 0.6;
+        let jumpForce = -12;
+        let velocityY = 0;
+        let groundLevel = 0;
+        let currentY = 0;
+        
+        // Object Positions
+        let speed = 7;
+        let cactusX = 800;
+        let birdX = 1300;
+        let coinX = 1000;
+        let coinY = 100;
+
+        function init() {
+            document.getElementById('highScore').innerText = `Best: ${highScore}`;
+            document.getElementById('coins').innerText = `💰 ${coinCount}`;
+            window.requestAnimationFrame(update);
+        }
+
+        // Input Handling
+        let isJumping = false;
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                if (currentY === groundLevel && isPlaying) {
+                    velocityY = jumpForce;
+                    document.getElementById('jumpSnd').play();
+                }
+            }
+        });
+
+        function update() {
+            if (!isPlaying) return;
+
+            // 1. Physics Logic
+            velocityY += gravity;
+            currentY -= velocityY;
+
+            if (currentY <= groundLevel) {
+                currentY = groundLevel;
+                velocityY = 0;
+            }
+            dino.style.bottom = currentY + 'px';
+
+            // 2. Object Movement
+            speed += 0.001; // Gradual difficulty increase
+            cactusX -= speed;
+            birdX -= (speed + 1);
+            coinX -= speed;
+
+            // Recycling objects
+            if (cactusX < -50) {
+                cactusX = 800 + Math.random() * 200;
+                score++;
+                checkNightMode();
+            }
+            if (birdX < -50) {
+                birdX = 1200 + Math.random() * 600;
+            }
+            if (coinX < -50) {
+                coinX = 900 + Math.random() * 500;
+                coinY = 50 + Math.random() * 100;
+            }
+
+            // Update visuals
+            cactus.style.left = cactusX + 'px';
+            bird.style.left = birdX + 'px';
+            coin.style.left = coinX + 'px';
+            coin.style.bottom = coinY + 'px';
+
+            // 3. Collision Detection
+            const dinoRect = dino.getBoundingClientRect();
+            const cactusRect = cactus.getBoundingClientRect();
+            const birdRect = bird.getBoundingClientRect();
+            const coinRect = coin.getBoundingClientRect();
+
+            // Hit Obstacles
+            if (isColliding(dinoRect, cactusRect) || isColliding(dinoRect, birdRect)) {
+                gameOver();
+            }
+
+            // Collect Coin
+            if (isColliding(dinoRect, coinRect)) {
+                coinCount++;
+                coinX = -100; // Remove coin
+                document.getElementById('coinSnd').play();
+                saveStats();
+            }
+
+            document.getElementById('score').innerText = `Score: ${score}`;
+            document.getElementById('coins').innerText = `💰 ${coinCount}`;
+
+            window.requestAnimationFrame(update);
+        }
+
+        function isColliding(rect1, rect2) {
+            // Added padding to make hitboxes more "fair"
+            const padding = 10;
+            return !(rect1.right - padding < rect2.left || 
+                     rect1.left + padding > rect2.right || 
+                     rect1.bottom - padding < rect2.top || 
+                     rect1.top + padding > rect2.bottom);
+        }
+
+        function checkNightMode() {
+            if (score > 0 && score % 20 === 0) {
+                document.body.classList.add('night');
+            } else if (score % 20 === 10) {
+                document.body.classList.remove('night');
+            }
+        }
+
+        function setSkin(type, price = 0) {
+            if (coinCount >= price) {
+                if (price > 0) {
+                    coinCount -= price;
+                    saveStats();
+                }
+                
+                if (type === 'default') dino.style.background = "url('https://i.imgur.com/QZ6Z6ZQ.png') center/cover";
+                if (type === 'blue') dino.style.backgroundColor = "deepskyblue";
+                if (type === 'gold') dino.style.backgroundColor = "gold";
+                
+                alert("Skin Applied!");
+            } else {
+                alert("Need more coins!");
+            }
+        }
+
+        function saveStats() {
+            localStorage.setItem('dinoCoins', coinCount);
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('dinoHighScore', highScore);
+            }
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            saveStats();
+            document.getElementById('retry-menu').style.display = 'block';
+        }
+
+        function resetGame() {
+            score = 0;
+            speed = 7;
+            cactusX = 800;
+            birdX = 1300;
+            coinX = 1000;
+            currentY = 0;
+            velocityY = 0;
+            isPlaying = true;
+            document.getElementById('retry-menu').style.display = 'none';
+            document.body.classList.remove('night');
+            init();
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>

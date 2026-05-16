@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Repository UI</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Poppins', sans-serif;
+}
+
+/* 🌌 BACKGROUND */
+body{
+  height:100vh;
+  background: linear-gradient(-45deg,#0f2027,#203a43,#2c5364,#000000);
+  background-size:400% 400%;
+  animation: bgMove 10s ease infinite;
+  color:white;
+}
+
+@keyframes bgMove{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+/* NAVBAR */
+.navbar{
+  position:fixed;
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  padding:15px 30px;
+  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.05);
+}
+
+.logo{
+  color:#00f2ff;
+  font-weight:bold;
+}
+
+.nav-links{
+  display:flex;
+  gap:20px;
+}
+
+/* HERO */
+.hero{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+
+.hero h1{
+  font-size:50px;
+  background:linear-gradient(90deg,#00f2ff,#ff00c8);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+
+.btn{
+  margin-top:20px;
+  padding:10px 25px;
+  border:none;
+  border-radius:20px;
+  background:linear-gradient(90deg,#00f2ff,#ff00c8);
+  cursor:pointer;
+}
+
+/* CARDS */
+.container{
+  padding:80px 20px;
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.card{
+  width:250px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  border-radius:15px;
+  padding:15px;
+  text-align:center;
+  position:relative;
+  transition:0.4s;
+}
+
+.card:hover{
+  transform:translateY(-10px);
+  box-shadow:0 0 20px #00f2ff;
+}
+
+.card button{
+  margin-top:5px;
+  padding:5px 10px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+/* ❤️ LIKE */
+.like{
+  position:absolute;
+  top:10px;
+  right:15px;
+  cursor:pointer;
+  font-size:20px;
+}
+
+.like.active{
+  color:red;
+}
+
+/* ⭐ STARS */
+.stars span{
+  cursor:pointer;
+  font-size:18px;
+}
+
+.stars .active{
+  color:gold;
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAV -->
+<div class="navbar">
+  <div class="logo">🎮 GameRepo</div>
+  <div class="nav-links">
+    <a>Home</a>
+    <a>Games</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Game Repository</h1>
+  <p>Download & Rate Games</p>
+  <button class="btn" onclick="scrollGames()">Explore Now</button>
+</div>
+
+<!-- GAMES -->
+<div class="container" id="games">
+
+  <div class="card" data-name="Game1">
+    <span class="like" onclick="like(this,'Game1')">❤</span>
+    <h3>Game 1</h3>
+
+    <div class="stars" data-game="Game1">
+      <span onclick="rate(this,1)">★</span>
+      <span onclick="rate(this,2)">★</span>
+      <span onclick="rate(this,3)">★</span>
+      <span onclick="rate(this,4)">★</span>
+      <span onclick="rate(this,5)">★</span>
+    </div>
+
+    <button onclick="downloadGame('Game 1')">Download</button>
+  </div>
+
+  <div class="card" data-name="Game2">
+    <span class="like" onclick="like(this,'Game2')">❤</span>
+    <h3>Game 2</h3>
+                       
+    <div class="stars" data-game="Game2">
+      <span onclick="rate(this,1)">★</span>
+      <span onclick="rate(this,2)">★</span>
+      <span onclick="rate(this,3)">★</span>
+      <span onclick="rate(this,4)">★</span>
+      <span onclick="rate(this,5)">★</span>
+    </div>
+
+    <button onclick="downloadGame('Game 2')">Download</button>
+  </div>
+
+</div>
+
+<script>
+
+/* SCROLL */
+function scrollGames(){
+  document.getElementById("games").scrollIntoView({behavior:"smooth"});
+}
+
+/* ❤️ LIKE */
+function like(el,game){
+  el.classList.toggle("active");
+
+  let liked = JSON.parse(localStorage.getItem("likes")) || [];
+
+  if(liked.includes(game)){
+    liked = liked.filter(g=>g!==game);
+  }else{
+    liked.push(game);
+  }
+
+  localStorage.setItem("likes", JSON.stringify(liked));
+}
+
+/* ⭐ RATE */
+function rate(el,value){
+  let parent = el.parentElement;
+  let game = parent.getAttribute("data-game");
+
+  localStorage.setItem("rating_"+game,value);
+
+  let stars = parent.children;
+  for(let i=0;i<stars.length;i++){
+    stars[i].classList.remove("active");
+    if(i < value){
+      stars[i].classList.add("active");
+    }
+  }
+}
+
+/* LOAD SAVED */
+window.onload = function(){
+
+  // likes
+  let liked = JSON.parse(localStorage.getItem("likes")) || [];
+  document.querySelectorAll(".card").forEach(card=>{
+    let name = card.getAttribute("data-name");
+    if(liked.includes(name)){
+      card.querySelector(".like").classList.add("active");
+    }
+  });
+
+  // ratings
+  document.querySelectorAll(".stars").forEach(starBox=>{
+    let game = starBox.getAttribute("data-game");
+    let saved = localStorage.getItem("rating_"+game);
+
+    if(saved){
+      let stars = starBox.children;
+      for(let i=0;i<saved;i++){
+        stars[i].classList.add("active");
+      }
+    }
+  });
+
+}
+
+/* DOWNLOAD */
+function downloadGame(name){
+  alert("Downloading " + name);
+}
+
+</script>
+
+</body>
+</html>
